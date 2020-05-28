@@ -33,7 +33,6 @@ class Activation(object):
     """
 
     # No additional work is needed for this class, as it acts like an abstract base class for the others
-
     def __init__(self):
         self.state = None
 
@@ -53,7 +52,6 @@ class Identity(Activation):
     """
 
     # This class is a gimme as it is already implemented for you as an example
-
     def __init__(self):
         super(Identity, self).__init__()
 
@@ -71,14 +69,13 @@ class Sigmoid(Activation):
     """
 
     # Remember do not change the function signatures as those are needed to stay the same for AL
-
     def __init__(self):
         super(Sigmoid, self).__init__()
 
     def forward(self, x):
         # Might we need to store something before returning?
         self.state = x
-        return 1.0 / (np.exp(-x) - 1)
+        return 1.0 / (1 + np.exp(-x))
 
     def derivative(self):
         # Maybe something we need later in here...
@@ -92,7 +89,6 @@ class Tanh(Activation):
     """
 
     # This one's all you!
-
     def __init__(self):
         super(Tanh, self).__init__()
 
@@ -102,7 +98,7 @@ class Tanh(Activation):
 
     def derivative(self):
         x = self.state
-        return 1.0 / np.power(np.cosh(x), 4)
+        return 1.0 / np.power(np.cosh(x), 2)
 
 
 class ReLU(Activation):
@@ -163,7 +159,7 @@ class SoftmaxCrossEntropy(Criterion):
         self.logits = x
         self.labels = y
         self.sm = np.exp(x) / np.sum(np.exp(x))
-        self.loss = -y * np.log(self.sm) - (1 - y) * np.log(1 - self.sm)
+        self.loss = np.sum(-y * np.log(self.sm) - (1 - y) * np.log(1 - self.sm))
         return self.sm
 
     def derivative(self):
@@ -193,6 +189,8 @@ class BatchNorm(object):
         self.dbeta = np.zeros((1, fan_in))
 
         # inference parameters
+        self.fan_in = fan_in
+        self.n_batches = 0
         self.running_mean = np.zeros((1, fan_in))
         self.running_var = np.ones((1, fan_in))
 
@@ -200,35 +198,49 @@ class BatchNorm(object):
         return self.forward(x, eval)
 
     def forward(self, x, eval=False):
-        # if eval:
-        #    # ???
+        if eval:
+            norm = (x - self.running_mean) / np.sqrt(self.running_var + self.eps)
+            out = self.gamma * norm + self.beta
+            return out
 
         self.x = x
 
-        # self.mean = # ???
-        # self.var = # ???
-        # self.norm = # ???
-        # self.out = # ???
+        self.mean = np.mean(x, axis=1, keepdims=True)
+        self.var = np.var(x, axis=1, keepdims=True)
+        self.norm = (x - self.mean) / np.sqrt(self.var + self.eps)
+        self.out = self.gamma * self.norm + self.beta
 
         # update running batch statistics
-        # self.running_mean = # ???
-        # self.running_var = # ???
+        self.running_mean = \
+            (self.running_mean * self.n_batches + self.mean) / (self.n_batches + 1)
+        coeff0 = self.fan_in / ((self.fan_in - 1) * self.n_batches)
+        coeff1 = self.fan_in / ((self.fan_in - 1) * (self.n_batches + 1))
+        self.running_var = \
+            ((self.running_var / coeff0) * self.n_batches + self.var) * coeff1
+        self.n_batches += 1
 
-        # ...
-
-        raise NotImplemented
+        return self.out
 
     def backward(self, delta):
-        raise NotImplemented
+        self.dgamma = self.out * delta
+        self.dbeta = delta
+        dnorm = self.gamma * delta
+
+        dmean = -(1.0 / np.sqrt(self.var + self.eps)) * np.sum(dnorm, axis=1, keepdims=True)
+        dvar = -0.5 * np.power(self.var + self.eps, -1.5) * np.sum(dnorm * (self.x - self.mean))
+        dx = (dnorm / np.sqrt(self.var + self.eps) +
+              dvar * 2 * (self.x - self.mean) / self.fan_in +
+              dmean / self.fan_in)
+        return dx
 
 
 # These are both easy one-liners, don't over-think them
 def random_normal_weight_init(d0, d1):
-    raise NotImplemented
+    return np.random.rand(d0, d1)
 
 
 def zeros_bias_init(d):
-    raise NotImplemented
+    return np.zeros(d)
 
 
 class MLP(object):
@@ -254,20 +266,26 @@ class MLP(object):
         # Don't change the name of the following class attributes,
         # the autograder will check against these attributes. But you will need to change
         # the values in order to initialize them correctly
-        self.W = None
-        self.dW = None
-        self.b = None
-        self.db = None
+        self.W = np.random.rand(self.nlayers, input_size)
+        self.dW = np.zeros([self.nlayers, input_size])
+        self.b = np.zeros(self.nlayers)
+        self.db = np.zeros(self.nlayers)
         # HINT: self.foo = [ bar(???) for ?? in ? ]
 
         # if batch norm, add batch norm parameters
         if self.bn:
-            self.bn_layers = None
+            self.bn_layers = [BatchNorm(self.bn) for i in range(self.nlayers)]
 
         # Feel free to add any other attributes useful to your implementation (input, output, ...)
 
     def forward(self, x):
-        raise NotImplemented
+        z = x
+        for i in range(self.nlayers):
+            y = self.W[i, :] * z + self.b[i]
+            if self.bn:
+                y = self.bn_layers[i](y)
+            z = self.activations[i](y)
+        return self.criterion(z)
 
     def zero_grads(self):
         raise NotImplemented
