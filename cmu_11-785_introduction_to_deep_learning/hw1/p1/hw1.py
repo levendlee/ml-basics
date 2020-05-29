@@ -231,9 +231,15 @@ class BatchNorm(object):
         
         :param x: z. linear output. (n_samples, n_features)
         :param eval: train or test.
-        :return: \hat{z}. shifted output. (n_samples, n_features)
+        :return: hat{z}. shifted output. (n_samples, n_features)
         """
+        n_samples = x.shape[0]
         if eval:
+            '''
+            mean = np.mean(self.running_mean)
+            var = (n_samples / (n_samples - 1)) * np.mean(self.running_var)
+            norm = (x - mean) / np.sqrt(var + self.eps)
+            '''
             norm = (x - self.running_mean) / np.sqrt(self.running_var + self.eps)
             out = self.gamma * norm + self.beta
             return out
@@ -251,23 +257,28 @@ class BatchNorm(object):
         # following arrays shape: (1, n_features)
         self.running_mean = self.alpha * self.running_mean + (1 - self.alpha) * self.mean
         self.running_var = self.alpha * self.running_var + (1 - self.alpha) * self.var
-
+        '''
+        self.running_mean.append(self.mean)
+        self.running_var.append(self.var)
+        '''
         return self.out
 
     def backward(self, delta: np.ndarray) -> np.ndarray:
         """
 
-        :param delta: \frac{dDiv}{d\hat{z}}. (n_samples, n_features)
+        :param delta: \frac{dDiv}{dhat{z}}. (n_samples, n_features)
         :return: \frac{dDiv}{dz}. (n_samples, n_features)
         """
+        n_samples = self.x.shape[0]
+
         # (1, n_features)
         # Here we take sum, not average
         self.dgamma = np.sum(self.norm * delta, axis=0)
         self.dbeta = np.sum(delta, axis=0)
 
         dnorm = self.gamma * delta
+
         # followings are the formula from the slides
-        '''
         # (1, n_features)
         dmean = (-(1.0 / np.sqrt(self.var + self.eps)) *
                  np.sum(dnorm, axis=0, keepdims=True))
@@ -275,13 +286,16 @@ class BatchNorm(object):
                 np.sum(dnorm * (self.x - self.mean), axis=0, keepdims=True))
         # (n_samples, n_features)
         dx = (dnorm / np.sqrt(self.var + self.eps) +
-              dvar * 2 * (self.x - self.mean) / self.fan_in +
-              dmean / self.fan_in)
+              dvar * 2 * (self.x - self.mean) / n_samples +
+              dmean / n_samples)
+
+        # followings are the formula from the internet
         '''
-        dx = (1.0 / (self.fan_in * np.sqrt(self.var + self.eps)) *
-              (self.fan_in * dnorm
+        dx = (1.0 / (n_samples * np.sqrt(self.var + self.eps)) *
+              (n_samples * dnorm
                - np.sum(dnorm, axis=0)
                - dnorm * np.sum(dnorm * self.norm, axis=0)))
+        '''
         return dx
 
 
@@ -392,13 +406,12 @@ class MLP(object):
         self.db_prev = self.db
         self.dW = [np.zeros((self.sizes[i], self.sizes[i + 1])) for i in range(self.nlayers)]
         self.db = [np.zeros((self.sizes[i + 1],)) for i in range(self.nlayers)]
-        '''
+
         for layer in self.bn_layers:
             layer.dgamma_prev = layer.dgamma
             layer.dbeta_prev = layer.dbeta
             layer.dgamma = np.zeros((layer.fan_in,))
             layer.dbeta = np.zeros((layer.fan_in,))
-        '''
 
     def step(self):
         """
@@ -413,9 +426,9 @@ class MLP(object):
 
         for layer in self.bn_layers:
             # layer.dgamma = self.momentum * layer.dgamma_prev - self.lr * layer.dgamma
-            layer.gamma += layer.dgamma
+            layer.gamma -= self.lr * layer.dgamma
             # layer.dbeta = self.momentum * layer.dbeta_prev - self.lr * layer.dbeta
-            layer.beta += layer.dbeta
+            layer.beta -= self.lr * layer.dbeta
 
     def backward(self, labels: np.ndarray) -> np.ndarray:
         """
@@ -425,30 +438,29 @@ class MLP(object):
         """
         n_samples = labels.shape[0]
         # (n_samples, output_size)
-        y = self.y[-1]
+        y = self.y[self.nlayers]
         # (n_samples,)
         loss = self.criterion(y, labels)
         # (n_samples, output_size)
         delta = self.criterion.derivative()
 
-        for i in range(-1, -self.nlayers - 1, -1):
+        for i in range(self.nlayers - 1, -1, -1):
             check_shape(loss, (n_samples,))
-            check_shape(delta, (n_samples, self.sizes[i]))
+            check_shape(delta, (n_samples, self.sizes[i + 1]))
             delta = self.activations[i].derivative() * delta
 
-            if (i + self.nlayers) < self.num_bn_layers:
-                delta = self.bn_layers[i + self.nlayers].backward(delta)
+            if i < self.num_bn_layers:
+                delta = self.bn_layers[i].backward(delta)
 
-            y = self.y[i - 1]
-
-            check_shape(delta, (n_samples, self.sizes[i]))
+            y = self.y[i]
+            check_shape(delta, (n_samples, self.sizes[i + 1]))
             self.dW[i] = np.matmul(np.transpose(y), delta) / n_samples
             self.db[i] = np.mean(delta, axis=0)
-            check_shape(self.dW[i], (self.sizes[i - 1], self.sizes[i]))
-            check_shape(self.db[i], (self.sizes[i],))
+            check_shape(self.dW[i], (self.sizes[i], self.sizes[i + 1]))
+            check_shape(self.db[i], (self.sizes[i + 1],))
 
             delta = np.matmul(delta, np.transpose(self.W[i]))
-            check_shape(delta, (n_samples, self.sizes[i - 1]))
+            check_shape(delta, (n_samples, self.sizes[i]))
 
         return loss
 
