@@ -1,30 +1,7 @@
-"""
-Follow the instructions provided in the writeup to completely
-implement the class specifications for a basic MLP, optimizer, .
-You will be able to test each section individually by submitting
-to autolab after implementing what is required for that section
--- do not worry if some methods required are not implemented yet.
-
-Notes:
-
-The __call__ method is a special reserved method in
-python that defines the behaviour of an object when it is
-used as a function. For example, take the Linear activation
-function whose implementation has been provided.
-
-# >>> activation = Identity()
-# >>> activation(3)
-# 3
-# >>> activation.forward(3)
-# 3
-"""
-
-# Do not import any additional 3rd party external libraries as they will not
-# be available to AutoLab and are not needed (or allowed)
-import numpy as np
-import os
 import abc
 import typing
+
+import numpy as np
 
 
 class Activation(abc.ABC):
@@ -44,8 +21,8 @@ class Activation(abc.ABC):
     def forward(self, x: np.ndarray) -> np.ndarray:
         """
 
-        :param x: z. (n_samples, n_out_features)
-        :return: y. (n_samples, n_out_features)
+        :param x: z. (batch_size, n_out_features)
+        :return: y. (batch_size, n_out_features)
         """
         raise NotImplemented
 
@@ -53,7 +30,7 @@ class Activation(abc.ABC):
     def derivative(self) -> np.ndarray:
         """
 
-        :return: dy/dz. (n_samples, n_out_features)
+        :return: dy/dz. (batch_size, n_out_features)
         """
         raise NotImplemented
 
@@ -88,9 +65,7 @@ class Sigmoid(Activation):
         return self.state
 
     def derivative(self):
-        x = self.x
-        return np.exp(-x) / np.power((np.exp(-x) + 1.0), 2)
-        # return self.state * (1 - self.state)
+        return self.state * (1 - self.state)
 
 
 class Tanh(Activation):
@@ -130,12 +105,6 @@ class ReLU(Activation):
         return np.where(x > 0, 1.0, 0.0)
 
 
-# Ok now things get decidedly more interesting. The following Criterion class
-# will be used again as the basis for a number of loss functions (which are in the
-# form of classes so that they can be exchanged easily (it's how PyTorch and other
-# ML libraries do it))
-
-
 class Criterion(abc.ABC):
     """
     Interface for loss functions.
@@ -153,9 +122,9 @@ class Criterion(abc.ABC):
     def forward(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """
 
-        :param x: output. (n_samples, output_size)
-        :param y: target. (n_samples,)
-        :return: loss. (n_samples,)
+        :param x: output. (batch_size, output_size)
+        :param y: target. (batch_size,)
+        :return: loss. (batch_size,)
         """
         raise NotImplemented
 
@@ -163,7 +132,7 @@ class Criterion(abc.ABC):
     def derivative(self) -> np.ndarray:
         """
 
-        :return: (n_samples, output_size)
+        :return: (batch_size, output_size)
         """
         raise NotImplemented
 
@@ -180,7 +149,7 @@ class SoftmaxCrossEntropy(Criterion):
     def forward(self, x, y):
         self.logits = x
         self.labels = y
-        # self.sm shape: (n_samples, output_size)
+        # (batch_size, output_size)
         self.sm = np.exp(x) / np.sum(np.exp(x), axis=1)[:, None]
         # TODO: I don't understand why the autograder take the following formula as wrong
         # self.loss = np.sum(-y * np.log(self.sm) - (1 - y) * np.log(1 - self.sm), axis=1)
@@ -229,47 +198,37 @@ class BatchNorm(object):
     def forward(self, x: np.ndarray, eval=False) -> np.ndarray:
         """
         
-        :param x: z. linear output. (n_samples, n_features)
+        :param x: z. linear output. (batch_size, n_features)
         :param eval: train or test.
-        :return: hat{z}. shifted output. (n_samples, n_features)
+        :return: hat{z}. shifted output. (batch_size, n_features)
         """
-        n_samples = x.shape[0]
         if eval:
-            '''
-            mean = np.mean(self.running_mean)
-            var = (n_samples / (n_samples - 1)) * np.mean(self.running_var)
-            norm = (x - mean) / np.sqrt(var + self.eps)
-            '''
             norm = (x - self.running_mean) / np.sqrt(self.running_var + self.eps)
             out = self.gamma * norm + self.beta
             return out
+        else:
+            self.x = x
 
-        self.x = x
+            # following arrays shape: (1, n_features)
+            self.mean = np.mean(x, axis=0, keepdims=True)
+            self.var = np.var(x, axis=0, keepdims=True)
+            # following arrays shape: (batch_size, n_features)
+            self.norm = (x - self.mean) / np.sqrt(self.var + self.eps)
+            self.out = self.gamma * self.norm + self.beta
 
-        # following arrays shape: (1, n_features)
-        self.mean = np.mean(x, axis=0, keepdims=True)
-        self.var = np.var(x, axis=0, keepdims=True)
-        # following arrays shape: (n_samples, n_features)
-        self.norm = (x - self.mean) / np.sqrt(self.var + self.eps)
-        self.out = self.gamma * self.norm + self.beta
-
-        # update running batch statistics.
-        # following arrays shape: (1, n_features)
-        self.running_mean = self.alpha * self.running_mean + (1 - self.alpha) * self.mean
-        self.running_var = self.alpha * self.running_var + (1 - self.alpha) * self.var
-        '''
-        self.running_mean.append(self.mean)
-        self.running_var.append(self.var)
-        '''
+            # update running batch statistics.
+            # following arrays shape: (1, n_features)
+            self.running_mean = self.alpha * self.running_mean + (1 - self.alpha) * self.mean
+            self.running_var = self.alpha * self.running_var + (1 - self.alpha) * self.var
         return self.out
 
     def backward(self, delta: np.ndarray) -> np.ndarray:
         """
 
-        :param delta: \frac{dDiv}{dhat{z}}. (n_samples, n_features)
-        :return: \frac{dDiv}{dz}. (n_samples, n_features)
+        :param delta: \frac{dDiv}{dhat{z}}. (batch_size, n_features)
+        :return: \frac{dDiv}{dz}. (batch_size, n_features)
         """
-        n_samples = self.x.shape[0]
+        batch_size = self.x.shape[0]
 
         # (1, n_features)
         # Here we take sum, not average
@@ -278,24 +237,16 @@ class BatchNorm(object):
 
         dnorm = self.gamma * delta
 
-        # followings are the formula from the slides
         # (1, n_features)
         dmean = (-(1.0 / np.sqrt(self.var + self.eps)) *
                  np.sum(dnorm, axis=0, keepdims=True))
         dvar = (-0.5 * np.power(self.var + self.eps, -1.5) *
                 np.sum(dnorm * (self.x - self.mean), axis=0, keepdims=True))
-        # (n_samples, n_features)
+        # (batch_size, n_features)
         dx = (dnorm / np.sqrt(self.var + self.eps) +
-              dvar * 2 * (self.x - self.mean) / n_samples +
-              dmean / n_samples)
+              dvar * 2 * (self.x - self.mean) / batch_size +
+              dmean / batch_size)
 
-        # followings are the formula from the internet
-        '''
-        dx = (1.0 / (n_samples * np.sqrt(self.var + self.eps)) *
-              (n_samples * dnorm
-               - np.sum(dnorm, axis=0)
-               - dnorm * np.sum(dnorm * self.norm, axis=0)))
-        '''
         return dx
 
 
@@ -358,12 +309,12 @@ class MLP(object):
         self.W = [weight_init_fn(sizes[i], sizes[i + 1]) for i in range(self.nlayers)]
         self.dW = [np.zeros((self.sizes[i], self.sizes[i + 1])) for i in range(self.nlayers)]
         # self.b / self.db: A list of vectors. L * 1 * D_{i+1}
+        #                   Each matrix contains biases rom i th layer to i+1 th layer.
         self.b = [bias_init_fn(sizes[i + 1]) for i in range(self.nlayers)]
         self.db = [np.zeros((self.sizes[i + 1],)) for i in range(self.nlayers)]
-        # HINT: self.foo = [ bar(???) for ?? in ? ]
 
         # if batch norm, add batch norm parameters
-        # NOTE: Assume we add batch normalization since the first layer.
+        # NOTE: assume adding batch normalization consecutively since the first layer.
         if self.bn:
             self.bn_layers = [BatchNorm(self.sizes[i + 1]) for i in range(self.num_bn_layers)]
         else:
@@ -376,25 +327,16 @@ class MLP(object):
     def forward(self, x: np.ndarray) -> np.ndarray:
         """
 
-        :param x: input. (n_samples, input_size)
-        :return: output. (n_samples, output_size)
+        :param x: input. (batch_size, input_size)
+        :return: output. (batch_size, output_size)
         """
-        # cache input. (n_samples, input_size / n_features)
-        n_samples = x.shape[0]
+        # (batch_size, input_size)
         y = self.y[0] = x
         for i in range(self.nlayers):
-            check_shape(y, (n_samples, self.sizes[i]))
-            check_shape(self.W[i], (self.sizes[i], self.sizes[i + 1]))
-            check_shape(self.b[i], (1, self.sizes[i + 1]))
             z = np.matmul(y, self.W[i]) + self.b[i]
-            check_shape(z, (n_samples, self.sizes[i + 1]))
-
             if i < self.num_bn_layers:
                 z = self.bn_layers[i](z, eval=not self.train_mode)
-                check_shape(z, (n_samples, self.sizes[i + 1]))
-
             y = self.y[i + 1] = self.activations[i](z)
-            check_shape(y, (n_samples, self.sizes[i + 1]))
         return self.y[-1]
 
     def zero_grads(self):
@@ -420,47 +362,38 @@ class MLP(object):
         """
         for i in range(self.nlayers):
             self.dW[i] = self.momentum * self.dW_prev[i] - self.lr * self.dW[i]
-            self.W[i] = self.W[i] + self.dW[i]
+            self.W[i] += self.dW[i]
             self.db[i] = self.momentum * self.db_prev[i] - self.lr * self.db[i]
-            self.b[i] = self.b[i] + self.db[i]
+            self.b[i] += self.db[i]
 
         for layer in self.bn_layers:
-            # layer.dgamma = self.momentum * layer.dgamma_prev - self.lr * layer.dgamma
-            layer.gamma -= self.lr * layer.dgamma
-            # layer.dbeta = self.momentum * layer.dbeta_prev - self.lr * layer.dbeta
-            layer.beta -= self.lr * layer.dbeta
+            dgamma = self.momentum * layer.dgamma_prev - self.lr * layer.dgamma
+            layer.gamma += dgamma
+            dbeta = self.momentum * layer.dbeta_prev - self.lr * layer.dbeta
+            layer.beta += dbeta
 
     def backward(self, labels: np.ndarray) -> np.ndarray:
         """
 
-        :param labels: expected output. (n_samples,)
-        :return: loss. (n_samples,)
+        :param labels: expected output. (batch_size,)
+        :return: loss. (batch_size,)
         """
-        n_samples = labels.shape[0]
-        # (n_samples, output_size)
+        batch_size = labels.shape[0]
+        # (batch_size, output_size)
         y = self.y[self.nlayers]
-        # (n_samples,)
+        # (batch_size,)
         loss = self.criterion(y, labels)
-        # (n_samples, output_size)
+        # (batch_size, output_size)
         delta = self.criterion.derivative()
 
         for i in range(self.nlayers - 1, -1, -1):
-            check_shape(loss, (n_samples,))
-            check_shape(delta, (n_samples, self.sizes[i + 1]))
             delta = self.activations[i].derivative() * delta
-
             if i < self.num_bn_layers:
                 delta = self.bn_layers[i].backward(delta)
-
             y = self.y[i]
-            check_shape(delta, (n_samples, self.sizes[i + 1]))
-            self.dW[i] = np.matmul(np.transpose(y), delta) / n_samples
+            self.dW[i] = np.matmul(np.transpose(y), delta) / batch_size
             self.db[i] = np.mean(delta, axis=0)
-            check_shape(self.dW[i], (self.sizes[i], self.sizes[i + 1]))
-            check_shape(self.db[i], (self.sizes[i + 1],))
-
             delta = np.matmul(delta, np.transpose(self.W[i]))
-            check_shape(delta, (n_samples, self.sizes[i]))
 
         return loss
 
@@ -487,17 +420,6 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     training_errors = []
     validation_losses = []
     validation_errors = []
-
-    '''
-    def pad_data(trainx):
-        raw_size = len(trainx)
-        padded_size = (raw_size // batch_size + 1) * batch_size
-        trainx[raw_size:padded_size] = np.random.choice(trainx, padded_size - raw_size)
-        return trainx
-    
-    pad_data(trainx)
-    pad_data(val)
-    '''
 
     norm_mean, norm_var = np.mean(trainx, axis=1), np.var(trainx, axis=1)
     trainx = (trainx - norm_mean) / norm_var
@@ -537,6 +459,6 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
         x, y = testx[b: b + batch_size], testy[b: b + batch_size]
         output = mlp.forward(x)
         test_error += np.sum(np.argmax(output) != y)
-    test_error /= len(test_error)
+    test_error /= len(testx)
 
     return (training_losses, training_errors, validation_losses, validation_errors)
