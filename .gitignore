@@ -1,5 +1,9 @@
+
 *.tar.gz
 
+**/venv
+**/.cache
+**/.pytest_cache
 **/.idea
 **/.ipynb_checkpoints
 **/__pycache__
