@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 
 class Linear():
@@ -10,7 +9,7 @@ class Linear():
 
         self.W = np.random.randn(out_feature, in_feature)
         self.b = np.zeros(out_feature)
-        
+
         self.dW = np.zeros(self.W.shape)
         self.db = np.zeros(self.b.shape)
 
@@ -28,12 +27,10 @@ class Linear():
         dx = np.dot(delta, self.W.T)
         return dx
 
-        
 
 class Conv1D():
-    def __init__(self, in_channel, out_channel, 
+    def __init__(self, in_channel, out_channel,
                  kernel_size, stride):
-
         self.in_channel = in_channel
         self.out_channel = out_channel
         self.kernel_size = kernel_size
@@ -49,22 +46,58 @@ class Conv1D():
         return self.forward(x)
 
     def forward(self, x):
-
         ## Your codes here
-        self.batch, __ , self.width = x.shape
-        assert __ == self.in_channel, 'Expected the inputs to have {} channels'.format(self.in_channel)
-        raise NotImplemented
-
+        self.x = x
+        self.batch, __, self.width = x.shape
+        assert __ == self.in_channel, \
+            'Expected the inputs to have {} channels'.format(self.in_channel)
+        self.output_width = (self.width - self.kernel_size) // self.stride + 1
+        z = np.zeros([self.batch, self.out_channel, self.output_width])
+        for i in range(self.output_width):
+            start = i * self.stride
+            end = start + self.kernel_size
+            # x[,,]: batch, in_channel, kernel_size
+            # W: out_channel, in_channel, kernel_size
+            # z[,,]: batch, output_channel
+            z[:, :, i] = np.tensordot(x[:, :, start:end], self.W,
+                                      axes=([1, 2], [1, 2])) + self.db[i]
+        return z
 
     def backward(self, delta):
-        
         ## Your codes here
-        # self.db = ???
-        # self.dW = ???
-        # return dx
-        raise NotImplemented
+        dx = np.zeros([self.batch, self.in_channel, self.width])
 
+        for k in range(self.width):
+            i = max((k - self.kernel_size + 1) // self.stride, 0)
+            if i * self.stride + self.kernel_size <= k:
+                i += 1
+            j = k // self.stride
+            if j * self.stride + self.kernel_size >= self.output_width:
+                j -= 1
+            if i > j:
+                break
+            wi = k - j * self.stride
+            wj = k - i * self.stride
+            # delta[,,]: batch, out_channel, impacted_weights_size
+            # W[,,]: out_channel, in_channel, impacted_weights_size
+            # dx[,,]: batch, in_channel
+            dx[:, :, k] = \
+                np.tensordot(delta[:, :, i:j + 1],
+                             self.W[:, :, wi:wj + 1:self.stride][:, :, ::-1],
+                             axes=([1, 2], [0, 2]))
 
+        # delta[,,]: batch, out_channel, output_width
+        # x[,,]: batch, in_channel, output_width
+        # dW: output_channel, in_channel, kernel_size
+        for k in range(self.kernel_size):
+            stop = k + self.output_width * self.stride
+            self.dW[:, :, k] = \
+                np.tensordot(delta[:, :, :],
+                             self.x[:, :, k:stop:self.stride],
+                             axes=([0, 2], [0, 2]))
+
+        self.db = np.sum(delta, axis=(0, 2))
+        return dx
 
 
 class Flatten():
@@ -80,14 +113,12 @@ class Flatten():
         raise NotImplemented
 
 
-
-
 class ReLU():
     def __call__(self, x):
         return self.forward(x)
 
     def forward(self, x):
-        self.dy = (x>=0).astype(x.dtype)
+        self.dy = (x >= 0).astype(x.dtype)
         return x * self.dy
 
     def backward(self, delta):
