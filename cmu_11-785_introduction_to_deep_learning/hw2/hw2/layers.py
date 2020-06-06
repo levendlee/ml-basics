@@ -72,7 +72,7 @@ class Conv1D():
             if i * self.stride + self.kernel_size <= k:
                 i += 1
             j = k // self.stride
-            if j * self.stride + self.kernel_size >= self.output_width:
+            if j * self.stride + self.kernel_size >= self.width:
                 j -= 1
             if i > j:
                 break
