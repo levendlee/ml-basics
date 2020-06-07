@@ -45,12 +45,21 @@ class Conv1D():
     def __call__(self, x):
         return self.forward(x)
 
+    def add_padding(self, x):
+        batch, in_channel, width = x.shape
+        padded_width = (((width - self.kernel_size - 1) // self.stride + 1) * self.stride +
+                        self.kernel_size)
+        padded_x = np.zeros((batch, in_channel, padded_width))
+        padded_x[:, :, 0:width] = x
+        return padded_x
+
     def forward(self, x):
         ## Your codes here
         self.x = x
         self.batch, __, self.width = x.shape
         assert __ == self.in_channel, \
             'Expected the inputs to have {} channels'.format(self.in_channel)
+
         self.output_width = (self.width - self.kernel_size) // self.stride + 1
         z = np.zeros([self.batch, self.out_channel, self.output_width])
         for i in range(self.output_width):
@@ -60,7 +69,7 @@ class Conv1D():
             # W: out_channel, in_channel, kernel_size
             # z[,,]: batch, output_channel
             z[:, :, i] = np.tensordot(x[:, :, start:end], self.W,
-                                      axes=([1, 2], [1, 2])) + self.db[i]
+                                      axes=([1, 2], [1, 2])) + self.b
         return z
 
     def backward(self, delta):
@@ -69,13 +78,13 @@ class Conv1D():
 
         for k in range(self.width):
             i = max((k - self.kernel_size + 1) // self.stride, 0)
-            if i * self.stride + self.kernel_size <= k:
+            while i * self.stride + self.kernel_size <= k:
                 i += 1
             j = k // self.stride
-            if j * self.stride + self.kernel_size >= self.width:
+            while j * self.stride + self.kernel_size > self.width or j >= self.output_width:
                 j -= 1
             if i > j:
-                break
+                continue
             wi = k - j * self.stride
             wj = k - i * self.stride
             # delta[,,]: batch, out_channel, impacted_weights_size
@@ -105,12 +114,13 @@ class Flatten():
         return self.forward(x)
 
     def forward(self, x):
-        ## Your codes here
-        raise NotImplemented
+        self.batch = x.shape[0]
+        self.channel = x.shape[1]
+        self.width = x.shape[2]
+        return x.reshape((self.batch, self.channel * self.width))
 
     def backward(self, x):
-        # Your codes here
-        raise NotImplemented
+        return x.reshape((self.batch, self.channel, self.width))
 
 
 class ReLU():
