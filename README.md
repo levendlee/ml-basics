@@ -6,16 +6,16 @@ In school, linear algebra, statistics and statistical machine learning
 
 ## Completed
 
-- NTU - [Machine Learning Foundations](https://www.csie.ntu.edu.tw/~htlin/course/ml20fall/)
+- [Machine Learning Foundations](https://www.csie.ntu.edu.tw/~htlin/course/ml20fall/) @ NTU
  - Theories and foundations. Not focused deep learning.
  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/machine-learning-foundations/).
 
-- CMU - [Introduction To Deep Learning](https://deeplearning.cs.cmu.edu/F23/index.html)
+- [Introduction To Deep Learning](https://deeplearning.cs.cmu.edu/F23/index.html) @ CMU
  - Introduction to deep learning. Focused on supervised learning.
  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/introduction-to-deep-learning/)
  - Labs at this repro.
 
-- Coursera - [Generative AI with Large Language Model](https://www.coursera.org/learn/generative-ai-with-llms)
+- [Generative AI with Large Language Model](https://www.coursera.org/learn/generative-ai-with-llms) @ Cousera
  - Introduction on fullstack LLM engineering.
  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/generative-ai-with-llm/)
  - Notes also at this repro as Markdown files.
@@ -23,12 +23,12 @@ In school, linear algebra, statistics and statistical machine learning
 
 ## In Progress
 
-- MIT - [Tiny ML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2022-fall-6s965)
+- [Tiny ML and Efficient Deep Learning Computing](https://hanlab.mit.edu/courses/2022-fall-6s965) @ MIT
   - Overview of model compression techniques and ml infra engineering.
   - Notes not uploaded.
   - Labs not uploaded.
 
-- HuggingFace - [Deep Reinforcement Learning](https://huggingface.co/learn/deep-rl-course/unit0/introduction)
+- [Deep Reinforcement Learning](https://huggingface.co/learn/deep-rl-course/unit0/introduction) @ HuggingFace
  - Introduction to deep reinforcement learning.
  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/deep-reinforcement-learning-intro/)
  - Labs not done.
