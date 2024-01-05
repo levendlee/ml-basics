@@ -7,19 +7,19 @@ In school, linear algebra, statistics and statistical machine learning
 ## Completed
 
 - [Machine Learning Foundations](https://www.csie.ntu.edu.tw/~htlin/course/ml20fall/) @ NTU
- - Theories and foundations. Not focused deep learning.
- - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/machine-learning-foundations/).
+  - Theories and foundations. Not focused deep learning.
+  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/machine-learning-foundations/).
 
 - [Introduction To Deep Learning](https://deeplearning.cs.cmu.edu/F23/index.html) @ CMU
- - Introduction to deep learning. Focused on supervised learning.
- - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/introduction-to-deep-learning/)
- - Labs at this repro.
+  - Introduction to deep learning. Focused on supervised learning.
+  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/introduction-to-deep-learning/)
+  - Labs at this repro.
 
 - [Generative AI with Large Language Model](https://www.coursera.org/learn/generative-ai-with-llms) @ Cousera
- - Introduction on fullstack LLM engineering.
- - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/generative-ai-with-llm/)
- - Notes also at this repro as Markdown files.
- - Labs not uploaded.
+  - Introduction on fullstack LLM engineering.
+  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/generative-ai-with-llm/)
+  - Notes also at this repro as Markdown files.
+  - Labs not uploaded.
 
 ## In Progress
 
