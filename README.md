@@ -29,9 +29,9 @@ In school, linear algebra, statistics and statistical machine learning
   - Labs not uploaded.
 
 - [Deep Reinforcement Learning](https://huggingface.co/learn/deep-rl-course/unit0/introduction) @ HuggingFace
- - Introduction to deep reinforcement learning.
- - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/deep-reinforcement-learning-intro/)
- - Labs not done.
+  - Introduction to deep reinforcement learning.
+  - Notes at [WordPress Site](https://levendlee.com/category/machine-learning/deep-reinforcement-learning-intro/)
+  - Labs not done.
 
 ## Planed
 
