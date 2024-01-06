@@ -31,29 +31,29 @@ A model to assess the alignment of a completion, to be used during RLHF training
 - *Solution*: Add a regularize, a reference model that stays frozen. Adds a penalty term on their difference, for example the [KL divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence).
 
 ## KL divergence
-$latex D_{KL}(P||Q) = \sum{P(x)log(\frac{P(x)}{Q(x)})}$ 
+$D_{KL}(P||Q) = \sum{P(x)log(\frac{P(x)}{Q(x)})}$ 
 
 
 ## Proximal Policy Optimization (PPO)
 
 - Phase 1. Calculate loss of value function
-$latex L^{VF} = \frac{1}{2}||V_{\theta}(s) - (\sum_{t=0}^T\gamma^t{r_t} | s_0=s)||_2^2$
-  - $latex V_{\theta}(s)$: Value function. Estimated future rewards.
-  - $latex (\sum_{t=0}^T\gamma^t{r_t} | s_0=s)$: Known future total reward.
+$L^{VF} = \frac{1}{2}||V_{\theta}(s) - (\sum_{t=0}^T\gamma^t{r_t} | s_0=s)||_2^2$
+  - $V_{\theta}(s)$: Value function. Estimated future rewards.
+  - $(\sum_{t=0}^T\gamma^t{r_t} | s_0=s)$: Known future total reward.
 
 - Phase 2. Calculate loss of policy function
-$latex L^{Policy} = min(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)})\cdot\hat{A_t}, clip(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}, 1 - \epsilon, 1 + \epsilon)\cdot\hat{A_t})$
-$latex \pi_\theta$ Model's probability distribution over tokens.
-  - $latex \pi_\theta(a_t|s_t)$: Probabilities of next token on the updated LLM.
-  - $latex \pi_{\theta_{old}}(a_t|s_t)$: Probabilities of next token on the initial LLM.
-  - $latex dot\hat{A_t}$: Advantage term.
-  - $latex \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}, 1 - \epsilon, 1 + \epsilon$: Trust region with original and updated output close.
+$L^{Policy} = min(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)})\cdot\hat{A_t}, clip(\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}, 1 - \epsilon, 1 + \epsilon)\cdot\hat{A_t})$
+$\pi_\theta$ Model's probability distribution over tokens.
+  - $\pi_\theta(a_t|s_t)$: Probabilities of next token on the updated LLM.
+  - $\pi_{\theta_{old}}(a_t|s_t)$: Probabilities of next token on the initial LLM.
+  - $dot\hat{A_t}$: Advantage term.
+  - $\frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}, 1 - \epsilon, 1 + \epsilon$: Trust region with original and updated output close.
 
 - Phase 3. Calculate entropy loss
-$latex L^{ENT} = entropy(\pi_\theta(\cdot | s_t))$
+$L^{ENT} = entropy(\pi_\theta(\cdot | s_t))$
 
 - Combined together:
-$latex L^{PPO} =  L^{VF} + c_1L^{Policy} + c_2L^{ENT}$
+$L^{PPO} =  L^{VF} + c_1L^{Policy} + c_2L^{ENT}$
 
 ## Consitutional AI
 - Consitution is a set of prompts describing the principles the model has to follow.
