@@ -8,10 +8,10 @@
   - Generate policy directly from value function.
 
 - Policy based
-  - Learn to approximate $latex \pi^\*$ without learning a value function. 
+  - Learn to approximate $\pi^*$ without learning a value function. 
   - Parameterize the policy.
-  - e.g. Stochastic Policy: $latex \pi_{\theta}(s) = P[A|S;\theta]$
-  - Define an objective function $latex J(\theta)$, expected cumulative reward, and want to find the value $latex \theta$ that maximizes the objective function.
+  - e.g. Stochastic Policy: $\pi_{\theta}(s) = P[A|S;\theta]$
+  - Define an objective function $J(\theta)$, expected cumulative reward, and want to find the value $\theta$ that maximizes the objective function.
 
 - Actor-critic
   - A combination of both.
@@ -56,38 +56,38 @@ Difference lies in how to optimize the parameters:
 ### Objective Function
 Performance of the agent given a trajectory (state action sequence without considering reward), outputs the *expected cumulative reward*.
 
-$latex J(\theta) = E_{\tau \sim \pi}[R(\tau)] = \sum_{\tau}P(\tau;\theta)R(\tau) = \sum_{\tau}[\prod_{t=0}P(s_{t+1}|s_t,a_t)\pi_{\theta}(a_t|s_t)]R(\tau)$
+$J(\theta) = E_{\tau \sim \pi}[R(\tau)] = \sum_{\tau}P(\tau;\theta)R(\tau) = \sum_{\tau}[\prod_{t=0}P(s_{t+1}|s_t,a_t)\pi_{\theta}(a_t|s_t)]R(\tau)$
 
 in which
-$latex R(\tau) = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \ldots$: Discounted cumulative reward of the trajectory.
+$R(\tau) = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \ldots$: Discounted cumulative reward of the trajectory.
 
 ### Optimize Objective Function
-$latex \max_{\theta} J(\theta) = E_{\tau \sim \pi}[R(\tau)]$
+$\max_{\theta} J(\theta) = E_{\tau \sim \pi}[R(\tau)]$
 
-$latex \theta \leftarrow \theta + \alpha * \nabla_{\theta}J(\theta)$
+$\theta \leftarrow \theta + \alpha * \nabla_{\theta}J(\theta)$
 
 The problem:
-  - **Can't calculate the true gradient of the objective function** $latex P(\tau;\theta)$ since it requires calculating the probability of each possible trajectory. Require a sample-based estimate.
-  - **Can't differentiate the state distribution** (Markov Decision Process dynamics) $latex P(s_{t+1}|s_t,a_t)$ as we might not know about it.
+  - **Can't calculate the true gradient of the objective function** $P(\tau;\theta)$ since it requires calculating the probability of each possible trajectory. Require a sample-based estimate.
+  - **Can't differentiate the state distribution** (Markov Decision Process dynamics) $P(s_{t+1}|s_t,a_t)$ as we might not know about it.
 
 The solution:
-  - **Policy Gradient Theorem**: $latex \nabla_\theta J(\theta) = E_{\pi_\theta}[\nabla_\theta log \pi_\theta(a_t|s_t)R(\tau)]$
+  - **Policy Gradient Theorem**: $\nabla_\theta J(\theta) = E_{\pi_\theta}[\nabla_\theta log \pi_\theta(a_t|s_t)R(\tau)]$
   - [Math proof](https://huggingface.co/learn/deep-rl-course/unit4/pg-theorem). The main tricks are:
     - Derivative log trick (likelihood ratio trick or reinforce trick):
-       - $latex \nabla_x log f(x) = \frac{\nabla_x f(x)}{f(x)}$. 
-       - Translate $latex \frac{\nabla_\theta P(\tau;\theta)}{P(\tau;\theta)}$ to $latex \nabla_\theta logP(\tau;\theta)$.
+       - $\nabla_x log f(x) = \frac{\nabla_x f(x)}{f(x)}$. 
+       - Translate $\frac{\nabla_\theta P(\tau;\theta)}{P(\tau;\theta)}$ to $\nabla_\theta logP(\tau;\theta)$.
     - Use sampling to approximate distribution/expectation.
-       - Translate $latex \sum_{\tau} P(\tau;\theta)\nabla_\theta P(\tau;\theta) R(\tau)$ to $latex \frac{1}{m} \sum_{i=1}^m \nabla_\theta P(\tau^{(i)};\theta) R(\tau^{(i)})$
+       - Translate $\sum_{\tau} P(\tau;\theta)\nabla_\theta P(\tau;\theta) R(\tau)$ to $\frac{1}{m} \sum_{i=1}^m \nabla_\theta P(\tau^{(i)};\theta) R(\tau^{(i)})$
 
 ### The Reinforcement algorithm (Monte Carlo Reinforce)
 
-- Monte carol reinforce: Uses an estimate return from **an entire episode to update the policy parameter $latex \theta$.
+- Monte carol reinforce: Uses an estimate return from **an entire episode to update the policy parameter $\theta$.
 
-- One trajectory: $latex \nabla_\theta J(\theta) \approx \hat{g} = \sum_{t=0} \nabla_\theta log(\pi_\theta)(a_t|s_t)R(\tau)$
-- Multiple trajectories: $latex \nabla_\theta J(\theta) \approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \sum_{t=0} \nabla_\theta log(\pi_\theta)(a_t^{(i)}|s_t^{(i)})R(\tau^{(i)})$
+- One trajectory: $\nabla_\theta J(\theta) \approx \hat{g} = \sum_{t=0} \nabla_\theta log(\pi_\theta)(a_t|s_t)R(\tau)$
+- Multiple trajectories: $\nabla_\theta J(\theta) \approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \sum_{t=0} \nabla_\theta log(\pi_\theta)(a_t^{(i)}|s_t^{(i)})R(\tau^{(i)})$
 
 - Intuitions
-  - $latex \nabla_\theta log \pi_\theta(a_t|s_t)$ is the direction of **steepest increase of the (log) probability** of selecting action $latex a_t$ from state $latex s_t$. $latex R(\tau)$ is the scoring function.
+  - $\nabla_\theta log \pi_\theta(a_t|s_t)$ is the direction of **steepest increase of the (log) probability** of selecting action $a_t$ from state $s_t$. $R(\tau)$ is the scoring function.
   - If return is high, it will **push up the probabilities** of the (state, action) combinations.
   - Otherwise, **push down**.
   
