@@ -1,6 +1,7 @@
 
 *.tar.gz
 
+**/data/*
 **/venv
 **/.cache
 **/.pytest_cache
