@@ -26,9 +26,9 @@
 
 # Infrastructure
 ## Optimization
-###2022
+### 2022
 - [FlashAttention](https://arxiv.org/abs/2205.14135)
-###2023
+### 2023
 - [FlashAttention-2](https://arxiv.org/abs/2307.08691)
 
 ## Quantization
@@ -47,5 +47,5 @@
 - [Nvidia Structured Sparsity](https://arxiv.org/abs/2104.08378)
 
 ## Distributed Training
-###2021
+### 2021
 - [Sequence Parallelism](https://arxiv.org/abs/2105.13120)
