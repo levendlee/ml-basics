@@ -1,5 +1,6 @@
 
 *.tar.gz
+model.pth
 
 **/data/*
 **/venv
