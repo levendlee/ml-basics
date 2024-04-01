@@ -7,11 +7,13 @@
 - [Transformer-XL](https://arxiv.org/abs/1901.02860)
 ### 2020
 - [Performers](https://arxiv.org/abs/2009.14794)
+- [GPT3](https://arxiv.org/abs/2005.14165)
 ### 2023
 - [LLaMA](https://arxiv.org/abs/2302.13971)
 - [Mistral 7B](https://arxiv.org/abs/2310.06825)
 ### 2024
 - [Mistral 8x7B](https://arxiv.org/abs/2401.04088)
+- [Mamba](https://arxiv.org/abs/2312.00752)
 
 ## Automous Driving
 ### 2016
@@ -27,6 +29,7 @@
 # Infrastructure
 ## Optimization
 ### 2022
+- [Memory Efficient Attention](https://arxiv.org/abs/2112.05682)
 - [FlashAttention](https://arxiv.org/abs/2205.14135)
 ### 2023
 - [FlashAttention-2](https://arxiv.org/abs/2307.08691)
@@ -49,3 +52,6 @@
 ## Distributed Training
 ### 2021
 - [Sequence Parallelism](https://arxiv.org/abs/2105.13120)
+### 2023
+- [Blockwise Parallelism](https://arxiv.org/abs/2305.19370)
+- [Context Parallelism](https://arxiv.org/abs/2310.01889)
