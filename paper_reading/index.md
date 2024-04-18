@@ -17,15 +17,15 @@
 - [Mamba](https://arxiv.org/abs/2312.00752)
 
 ## Multimodality & Diffusion
-## 2020
+### 2020
 - [ViT](https://arxiv.org/abs/2010.11929)
-## 2021
+### 2021
 - [DiT](https://arxiv.org/abs/2112.10752)
 - [SwinTransformer(ShiftedWindowAttention)](https://arxiv.org/abs/2103.14030)
-## 2022
+### 2022
 - [LDM](https://arxiv.org/abs/2212.09748)
 - [eDiff-I](https://arxiv.org/abs/2211.01324)
-## 2024
+### 2024
 - [MM-DiT](https://arxiv.org/abs/2403.03206)
 
 ## Automous Driving
