@@ -1,27 +1,37 @@
 # Modeling
-## Natural Language
+## Attention & MoE
 ### 2017
 - [Attention is All You Need](https://arxiv.org/abs/1706.03762)
 - [Sparse Gated MoE](https://arxiv.org/abs/1701.06538)
 ### 2019
-- [Transformer-XL](https://arxiv.org/abs/1901.02860)
+- [Transformer-XL: Segment level recurrence](https://arxiv.org/abs/1901.02860)
 ### 2020
-- [Performers](https://arxiv.org/abs/2009.14794)
-- [Longformer(SlidingWindowAttention)](https://arxiv.org/abs/2004.05150)
+- [Performers: Fast Attention Via positive Orthogonal Random
+features](https://arxiv.org/abs/2009.14794)
+- [Longformer: Sliding Window Attention](https://arxiv.org/abs/2004.05150)
+### 2024
+- [Mamba: Attention with Selective State Space Models](https://arxiv.org/abs/2312.00752)
+- [Infinite Context Transformer: Compressive Memory](https://arxiv.org/abs/2404.07143)
+- [MegaLondon: Complex Exponential Moving Average](https://arxiv.org/abs/2404.08801)
+### 2025
+- [Native Sparse Attention: Sliding + LoRA + TopK Local](https://arxiv.org/abs/2502.11089)
+
+## Models
+### 2020
 - [GPT3](https://arxiv.org/abs/2005.14165)
 ### 2023
 - [LLaMA](https://arxiv.org/abs/2302.13971)
 - [Mistral 7B](https://arxiv.org/abs/2310.06825)
 ### 2024
 - [Mistral 8x7B](https://arxiv.org/abs/2401.04088)
-- [Mamba](https://arxiv.org/abs/2312.00752)
-
+- [DeepSeek V2](https://arxiv.org/abs/2405.04434)
+- [DeepSeek V3](https://arxiv.org/html/2412.19437v1)
 ## Multimodality & Diffusion
 ### 2020
 - [ViT](https://arxiv.org/abs/2010.11929)
 ### 2021
 - [DiT](https://arxiv.org/abs/2112.10752)
-- [SwinTransformer(ShiftedWindowAttention)](https://arxiv.org/abs/2103.14030)
+- [SwinTransformer: Shifted Window Attention](https://arxiv.org/abs/2103.14030)
 ### 2022
 - [LDM](https://arxiv.org/abs/2212.09748)
 - [eDiff-I](https://arxiv.org/abs/2211.01324)
@@ -46,6 +56,8 @@
 - [FlashAttention](https://arxiv.org/abs/2205.14135)
 ### 2023
 - [FlashAttention-2](https://arxiv.org/abs/2307.08691)
+### 2024
+- [FlashAttention-3](https://arxiv.org/abs/2407.08608)
 
 ## Quantization
 ### 2019
@@ -68,3 +80,8 @@
 ### 2023
 - [Blockwise Parallelism](https://arxiv.org/abs/2305.19370)
 - [Context Parallelism](https://arxiv.org/abs/2310.01889)
+
+## Distributed Inference
+### 2024
+- [Mooncake: KV-Cache Centric Disagg](https://arxiv.org/html/2407.00079v2)
+- [Sarathi: Chunked Prefill](https://arxiv.org/abs/2308.16369)
