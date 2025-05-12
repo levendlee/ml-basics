@@ -26,6 +26,9 @@ features](https://arxiv.org/abs/2009.14794)
 - [Mistral 8x7B](https://arxiv.org/abs/2401.04088)
 - [DeepSeek V2](https://arxiv.org/abs/2405.04434)
 - [DeepSeek V3](https://arxiv.org/html/2412.19437v1)
+### 2025
+- [DeepSeek R1](https://arxiv.org/abs/2501.12948)
+
 ## Multimodality & Diffusion
 ### 2020
 - [ViT](https://arxiv.org/abs/2010.11929)
@@ -85,3 +88,8 @@ features](https://arxiv.org/abs/2009.14794)
 ### 2024
 - [Mooncake: KV-Cache Centric Disagg](https://arxiv.org/html/2407.00079v2)
 - [Sarathi: Chunked Prefill](https://arxiv.org/abs/2308.16369)
+
+## Speculative Decoding
+- [EAGLE](https://arxiv.org/abs/2401.15077)
+- [EAGLE-2](https://arxiv.org/abs/2406.16858)
+- [Medusa](https://arxiv.org/abs/2401.10774)
